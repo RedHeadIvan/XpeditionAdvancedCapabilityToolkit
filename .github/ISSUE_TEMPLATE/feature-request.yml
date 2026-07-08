@@ -1,0 +1,13 @@
+name: Feature
+description: Suggest a feature
+title: "[FEATURE]: <name>"
+assignees:
+  - RedHeadIvan
+body:
+
+- type: textarea
+  attributes:
+    label: Description
+    description: How should the desired feature work?
+  validations:
+    required: true

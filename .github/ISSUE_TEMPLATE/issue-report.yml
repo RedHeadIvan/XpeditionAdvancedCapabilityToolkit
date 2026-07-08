@@ -1,0 +1,27 @@
+name: Bug
+description: Report a bug
+title: "[BUG]: <name>"
+assignees:
+  - RedHeadIvan
+body:
+
+- type: textarea
+  attributes:
+    label: Description
+    description: What is the error?
+  validations:
+    required: true
+    
+- type: textarea
+  attributes:
+    label: Reproducing steps
+    description: How to reproduce the error? Describe it step by step
+  validations:
+    required: true
+
+- type: textarea
+  attributes:
+    label: Expected behaviour
+    description: What kind of behavior was expected?
+  validations:
+    required: true

@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Electronics Calculator</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #eee;
+        }
+        
+        .app-container {
+            display: flex;
+            gap: 20px;
+            max-width: 1120px;
+            margin: 0 auto;
+        }
+        
+        .sidebar {
+            width: 200px;
+            flex-shrink: 0;
+        }
+        
+        .sidebar-btn {
+            display: block;
+            width: 100%;
+            padding: 14px 16px;
+            margin-bottom: 8px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 8px;
+            color: #aaa;
+            font-size: 14px;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .sidebar-btn:hover {
+            background: rgba(255,255,255,0.15);
+            color: #fff;
+        }
+        
+        .sidebar-btn.active {
+            background: #0066cc;
+            border-color: #0066cc;
+            color: #fff;
+        }
+        
+        .main-content {
+            flex: 1;
+            min-width: 900px;
+        }
+        
+        .container {
+            background: #fff;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            background: #4a5568;
+            color: #fff;
+            padding: 16px;
+            text-align: center;
+            font-size: 20px;
+            font-weight: 500;
+        }
+        
+        .tabs {
+            display: flex;
+            background: #e2e8f0;
+            border-bottom: 1px solid #cbd5e0;
+        }
+        
+        .tab {
+            flex: 1;
+            padding: 14px;
+            border: none;
+            background: transparent;
+            color: #718096;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .tab:hover {
+            background: #cbd5e0;
+        }
+        
+        .tab.active {
+            background: #fff;
+            color: #3182ce;
+            font-weight: 600;
+            border-bottom: 3px solid #3182ce;
+        }
+        
+        .content {
+            padding: 20px;
+            background: #fff;
+            color: #333;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        h2 {
+            color: #2d3748;
+            font-size: 16px;
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #4299e1;
+        }
+        
+        .input-section {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            align-items: flex-end;
+            margin-bottom: 16px;
+            padding: 16px;
+            background: #f7fafc;
+            border-radius: 8px;
+        }
+        
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        
+        .field label {
+            font-size: 11px;
+            color: #4a5568;
+            font-weight: 500;
+        }
+        
+        .field input, .field select {
+            padding: 8px 12px;
+            border: 1px solid #cbd5e0;
+            border-radius: 6px;
+            font-size: 14px;
+            min-width: 100px;
+            max-width: 100px;
+            transition: border-color 0.2s;
+        }
+        
+        .field input:focus, .field select:focus {
+            outline: none;
+            border-color: #0066cc;
+        }
+        
+        .btn {
+            padding: 10px 24px;
+            background: #3182ce;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .btn:hover {
+            background: #2b6cb0;
+            transform: translateY(-1px);
+        }
+        
+        .btn:disabled {
+            opacity: 0.7;
+            cursor: wait;
+            transform: none;
+        }
+        
+        .result-info {
+            margin-bottom: 12px;
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .table-container {
+            max-height: 400px;
+            overflow: auto;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        
+        .chart-container {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            position: relative;
+            min-height: 400px;
+        }
+        
+        .chart-container canvas {
+            display: block;
+            width: 800px;
+            height: 400px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        
+        th {
+            background: #16213e;
+            color: #fff;
+            padding: 10px 8px;
+            text-align: center;
+            font-weight: 500;
+            position: sticky;
+            top: 0;
+            cursor: pointer;
+        }
+        
+        th:hover {
+            background: #cbd5e0;
+        }
+        
+        td {
+            padding: 8px;
+            text-align: center;
+            border-bottom: 1px solid #eee;
+        }
+        
+        tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+        
+        tr:hover {
+            background: #e8f4ff;
+        }
+        
+        .ok {
+            color: #00aa55;
+            font-weight: 600;
+        }
+        
+        .error-col {
+            color: #dd3333;
+        }
+        
+        .validation-error {
+            padding: 12px 16px;
+            margin-bottom: 12px;
+            background: #ffebee;
+            border: 1px solid #ef5350;
+            border-radius: 6px;
+            color: #c62828;
+            font-size: 14px;
+        }
+        
+        .no-results {
+            padding: 40px;
+            text-align: center;
+            color: #999;
+        }
+        
+        .app-note-link {
+            margin-top: 16px;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            text-align: center;
+            font-size: 13px;
+            color: #666;
+        }
+        
+        .app-note-link a {
+            color: #0066cc;
+            text-decoration: none;
+        }
+        
+        .app-note-link a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="sidebar">
+            <button class="sidebar-btn active" onclick="switchApp(1)">Resistive Divider</button>
+            <button class="sidebar-btn" onclick="switchApp(2)">XTAL Calculator</button>
+            <button class="sidebar-btn" onclick="switchApp(3)">RC Charge/Discharge</button>
+            <button class="sidebar-btn" onclick="switchApp(4)">DCDC Buck</button>
+        </div>
+        
+        <div class="main-content" id="divider-app">
+            <div class="container">
+                <h1>Resistive Divider Calculator</h1>
+                <div class="tabs">
+                    <button id="tabBtn1" class="tab active" onclick="switchTab(1)">2-Resistor</button>
+                    <button id="tabBtn2" class="tab" onclick="switchTab(2)">3-Resistor</button>
+                </div>
+                <div class="content">
+                    <div id="div1" class="tab-content active">
+                        <h2>Voltage Divider (2 Resistors)</h2>
+                        <div class="input-section">
+                            <span class="field"><label>Vin (V)</label><input type="text" id="vin2" value="12" placeholder="12, 5, 3.3"></span>
+                            <span class="field"><label>Vout (V)</label><input type="text" id="vout2" value="5" placeholder="5, 3.3, 1.8"></span>
+                            <span class="field">
+                                <label>E-Series</label>
+                                <select id="grid2">
+                                    <option value="3">E3</option>
+                                    <option value="6">E6</option>
+                                    <option value="12">E12</option>
+                                    <option value="24">E24</option>
+                                    <option value="48">E48</option>
+                                    <option value="49">E24+E48</option>
+                                    <option value="96">E96</option>
+                                    <option value="97" selected>E24+E96</option>
+                                    <option value="192">E192</option>
+                                    <option value="193">E24+E192</option>
+                                </select>
+                            </span>
+                            <button class="btn" onclick="calculateDivider2()">Calculate</button>
+                        </div>
+                        <div id="results2" class="result-info"></div>
+                        <div id="table2" class="table-container"></div>
+                    </div>
+                    <div id="div2" class="tab-content">
+                        <h2>Voltage Divider (3 Resistors)</h2>
+                        <div class="input-section">
+                            <span class="field"><label>Vin (V)</label><input type="text" id="vin3" value="12" placeholder="12, 5, 3.3"></span>
+                            <span class="field"><label>Vout1 (V)</label><input type="text" id="vout1_3" value="5" placeholder="5, 3.3"></span>
+                            <span class="field"><label>Vout2 (V)</label><input type="text" id="vout2_3" value="3.3" placeholder="3.3, 2.5, 1.8"></span>
+                            <span class="field">
+                                <label>E-Series</label>
+                                <select id="grid3">
+                                    <option value="3">E3</option><option value="6">E6</option><option value="12">E12</option>
+                                    <option value="24">E24</option><option value="48">E48</option><option value="49">E24+E48</option>
+                                    <option value="96">E96</option><option value="97" selected>E24+E96</option>
+                                    <option value="192">E192</option><option value="193">E24+E192</option>
+                                </select>
+                            </span>
+                            <button class="btn" onclick="calculateDivider3()">Calculate</button>
+                        </div>
+                        <div id="results3" class="result-info"></div>
+                        <div id="table3" class="table-container"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="main-content" id="xtal-app" style="display:none;">
+            <div class="container">
+                <h1>XTAL Calculator</h1>
+                <div class="content">
+                    <h2>Quartz Resonator Load Calculation</h2>
+                    <div class="input-section">
+                        <span class="field"><label>ESR + Rseries (Ohm)</label><input type="text" id="esr" value="40" placeholder="40, 1k"></span>
+                        <span class="field"><label>Cload (F)</label><input type="text" id="cl" value="18p" placeholder="18p, 20n"></span>
+                        <span class="field"><label>Cshunt (F)</label><input type="text" id="cs" value="5p" placeholder="5p, 10p"></span>
+                        <span class="field"><label>Freq (Hz)</label><input type="text" id="freq" value="16M" placeholder="16M, 8M, 32k"></span>
+                        <button class="btn" onclick="calculateXTAL()">Calculate</button>
+                    </div>
+                    <div id="xtal-results" class="result-info"></div>
+                    <div class="app-note-link">
+                        Based on <a href="https://www.st.com/resource/en/application_note/an2867-guidelines-for-oscillator-design-on-stm8afals-and-stm32-mcusmpus-stmicroelectronics.pdf" target="_blank">STMicroelectronics AN2867</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="main-content" id="rc-app" style="display:none;">
+            <div class="container">
+                <h1>RC Charge/Discharge Calculator</h1>
+                <div class="content">
+                    <h2>RC Circuit Curves Visualization</h2>
+                    <div class="input-section">
+                        <span class="field"><label>R (Ohm)</label><input type="text" id="rc-r" value="10k" placeholder="10k, 1M, 0.5M"></span>
+                        <span class="field"><label>C (F)</label><input type="text" id="rc-c" value="100u" placeholder="100u, 10n, 1p"></span>
+                        <span class="field"><label>R Tolerance (%)</label><input type="number" id="rc-r-tol" value="5" step="1"></span>
+                        <span class="field"><label>C Tolerance (%)</label><input type="number" id="rc-c-tol" value="20" step="1"></span>
+                        <span class="field"><label>Vin (V)</label><input type="text" id="rc-vin" value="5" placeholder="5, 3.3, 12"></span>
+                        <button class="btn" onclick="calculateRC()">Calculate</button>
+                    </div>
+                    <div id="rc-results" class="result-info"></div>
+                    <div id="rc-chart" class="chart-container" style="height:400px;"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="main-content" id="dcdc-app" style="display:none;">
+            <div class="container">
+                <h1>DCDC Buck Calculator</h1>
+                <div class="content">
+                    <h2>Buck (Vin > Vout)</h2>
+                    <div class="input-section">
+                        <span class="field"><label>Vin max (V)</label><input type="text" id="dcdc-vin-max" value="12" placeholder="12, 5"></span>
+                        <span class="field"><label>Vin min (V)</label><input type="text" id="dcdc-vin-min" value="10.8" placeholder="10.8, 6"></span>
+                        <span class="field"><label>Vout (V)</label><input type="text" id="dcdc-vout" value="3.3" placeholder="3.3, 5"></span>
+                        <span class="field"><label>Fsw (Hz)</label><input type="text" id="dcdc-fsw" value="2.25M" placeholder="2.25M, 500k"></span>
+                        <span class="field"><label>Iout (A)</label><input type="text" id="dcdc-iout" value="1" placeholder="1, 2"></span>
+                        <span class="field"><label>Ind Ripple (K)</label><input type="text" id="dcdc-k" value="0.3" placeholder="0.3, 0.4"></span>
+                        <span class="field"><label>Vout ripple (V)</label><input type="text" id="dcdc-dvout-ripple" placeholder="optional"></span>
+                        <span class="field"><label>Step Iout (A)</label><input type="text" id="dcdc-diout" value="1" placeholder="0.5, 1"></span>
+                        <span class="field"><label>Trans Vout (V)</label><input type="text" id="dcdc-dvout" value="0.1" placeholder="0.1, 0.05"></span>
+                        <span class="field"><label>Vin ripple (V)</label><input type="text" id="dcdc-dvin" value="0.1" placeholder="0.1"></span>
+                        <span class="field"><label>FB Vref (V)</label><input type="text" id="dcdc-vref" value="0.8" placeholder="0.8, 1.2"></span>
+                        <span class="field"><label>R2 (Ohm)</label><input type="text" id="dcdc-r2" value="20k" placeholder="20k, 10k"></span>
+                        <span class="field">
+                            <label>L Series</label>
+                            <select id="dcdc-l-series">
+                                <option value="6">E6</option>
+                                <option value="12" selected>E12</option>
+                                <option value="24">E24</option>
+                                <option value="48">E48</option>
+                            </select>
+                        </span>
+                        
+                        <button class="btn" onclick="calculateDCDC()">Calculate</button>
+                    </div>
+                    <div id="dcdc-results" class="result-info"></div>
+                    <div style="margin-top:16px;padding:12px;background:#fff3cd;border-radius:6px;font-size:12px;color:#856404;line-height:1.5;">
+                        <p><strong>Note:</strong> This is a general-purpose calculation. Individual IC features are not considered. Always check manufacturer's recommendations for your part.</p>
+                        <p>Capacitor voltage derating <strong>not considered!</strong></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="calc.js"></script>
+</body>
+</html>
