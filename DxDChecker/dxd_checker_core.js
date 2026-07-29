@@ -23,6 +23,7 @@ var checkSimilar = true;
 var checkObsolete = true;
 var checkGlobals = true;
 var checkPNs = true;
+var checkUnusedGates = true;
 
 Scripting.DontExit = true;
 var mentorOutput = OutputLib.createConsole(new OutputLib.MentorDriver("Design Checker"));
@@ -189,6 +190,43 @@ if (checkGlobals) {
         mentorOutput.error("Design has global components:");
         for (var i = 0; i < globalComps.length; i++) {
             mentorOutput.error("UID:" + globalComps[i].UID + " - " + globalComps[i].SymbolBlock.GetName(SHORT_NAME) + "(" + globalComps[i].SymbolBlock.LibraryName + ")");
+        }
+    }
+}
+
+if (checkUnusedGates) {
+
+    mentorOutput.message("")
+    mentorOutput.message("Checking unused gates...");
+
+    var logfilepath = Application.GetProjectData().GetProjectPath() + "\\LogFiles\\UnusedGates.log";
+    if (FileSystemLib.fileExists(logfilepath)) {
+        var unusedGates = FileSystemLib.readTextFileLines(logfilepath)
+
+        var PNs = [[], []];
+        var cnt = -1;
+        for (var i = 0; i < unusedGates.length; i++) {
+            if (StringLib.startsWith(unusedGates[i], "BEGIN_PART_NUM")) {
+                cnt = cnt + 1;
+                PNs[cnt][0] = unusedGates[i].split(" ")[1];
+            }
+            else if (StringLib.startsWith(unusedGates[i], "BEGIN_REF")) {
+                if (PNs[cnt][1] == undefined)
+                    PNs[cnt][1] = unusedGates[i].split(" ")[1];
+                else
+                    PNs[cnt][1] = PNs[cnt][1] + ", " + unusedGates[i].split(" ")[1];
+            }
+        }
+
+        if (PNs.length > 0) {
+
+            mentorOutput.warning("Design has parts with unused gates!");
+            for (var i = 0; i < PNs.length; i++) {
+                mentorOutput.warning(PNs[i][0] + ": " + PNs[i][1]);
+            }
+        }
+        else {
+            mentorOutput.success("No unused gates found!");
         }
     }
 }
