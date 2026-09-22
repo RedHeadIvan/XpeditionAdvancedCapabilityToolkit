@@ -16,12 +16,13 @@ var console = OutputLib.createConsole(new OutputLib.MentorDriver("Conn Naming"))
 
 var dd = Application.ActiveView.Query(VDM_COMP, VD_SELECTED);
 
-    console.message("---------Connector naming started---------");
+console.message("---------Connector naming started---------");
 if (dd.count == 0) {
     console.error("No components selected!");
 }
-for (var a = 0; a < dd.Count; a++) {
-    var selectedComp = dd.Item(a + 1);
+
+for (var compCounter = 0; compCounter < dd.Count; compCounter++) {
+    var selectedComp = dd.Item(compCounter + 1);
 
     if (startsWith(selectedComp.RefDes, "X")) {
         var Block = selectedComp.Parent;
@@ -33,7 +34,7 @@ for (var a = 0; a < dd.Count; a++) {
         var segment;
         var point;
         var list = [];
-        
+
         for (var i = 0; i < conns.Count; i++) {
             var isNC = false;
 
@@ -113,28 +114,32 @@ for (var a = 0; a < dd.Count; a++) {
                 var locX = point.X;
                 var locY = point.Y;
 
-                addedText = Block.AddText(isNC ? "NC" : net.LogicalNetName, locX + add, locY);
+                // addedText = Block.AddText(isNC ? "NC" : net.LogicalNetName, locX + add, locY);
+                pin.AddAttribute("PinLabel=" + (isNC ? "NC" : net.LogicalNetName), locX + add, locY, 3);
+
             }
             else {
                 var connW = compUpRight.X - compLowLeft.X;
                 var add = connW - (connW - 40) / 2;
                 if (selectedComp.Orientation != VDORIENT_IDENTITY)
-                    add = -add - 10;
+                    add = -add + 10;
 
                 point = pin.GetLocation();
                 var locX = point.X;
                 var locY = point.Y;
 
-                addedText = Block.AddText("NC", locX + add, locY);
+                // addedText = Block.AddText("NC", locX + add, locY);
+                pin.AddAttribute("PinLabel=NC", locX + add, locY, 3);
             }
 
-            addedText.Origin = VDALIGN_MC;
+            // addedText.Origin = VDALIGN_MC;
+            pin.FindAttribute("PinLabel").Origin = VDALIGN_MC;
         }
 
-        console.success(selectedComp.RefDes + " completely named!");
+        console.success(selectedComp.RefDes + "." + selectedComp.SymbolBlock.GetName(1) + " completely named!");
     }
     else {
-        console.error( selectedComp.UID + " is not connector (RefDes have to be X...)");
+        console.error(selectedComp.UID + " is not connector (RefDes have to be X...)");
     }
 }
 

@@ -84,7 +84,7 @@ The Xpedition Designer toolbar contains following scripts:
    ![image_4](images/image_4.png)
 
 >[!IMPORTANT]
->This text is just plain text and it is not part of the connector symbol and is not linked to the nets connected to the connector.
+>The script adds the PinLabel property to each connector pin and writes the net name in its value. If you use the PinLabel property in a different way, you need to change the property name in the script to something else to avoid data loss.
 
 5. **Label Aligner** – This utility aligns the net labels of power and ground symbols (symbols of type Link). To use it, select a symbol and click on the button in the toolbar. For all symbols with the same symbol name, the net labels on the current sheet will be aligned as shown in the image below.
 
