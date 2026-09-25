@@ -11,16 +11,14 @@
 
 assignNetsFromFile = function (filePath, pinColumn, netColumn, skipLines, allowEmptyPins, allowEmptyNets, skipPower) {
 
-    try{
+    try {
         Application.Interactive = false;
         worker(filePath, pinColumn, netColumn, skipLines, allowEmptyPins, allowEmptyNets, skipPower);
     }
-    catch(e)
-    {
+    catch (e) {
 
     }
-    finally
-    {        
+    finally {
         Application.Interactive = true;
     }
 }
@@ -112,126 +110,123 @@ worker = function (filePath, pinColumn, netColumn, skipLines, allowEmptyPins, al
         console.error("No components selected!");
         return -1;
     }
-    var selectedComp = selectedComps.Item(1);
-    var compUID = selectedComp.UID;
+    
+    for (var compsCounter = 0; compsCounter < selectedComps.Count; compsCounter++) {
+        var selectedComp = selectedComps.Item(compsCounter + 1);
+        var compUID = selectedComp.UID;
+        var compPins = new LinqLib.Enumerable(MG_Utils.convertArray(selectedComp.GetConnections())).select(function (x) { return x.CompPin; }).toArray();
 
-    var allPins = view.Query(VDM_COMPPIN, VD_ALL);
-    var compPins = [];
-    for (var i = 1; i <= allPins.Count; i++) {
-        var pin = allPins.Item(i);
-        if (pin.Parent.UID === compUID) {
-            compPins.push(pin);
+        if (compPins.length === 0) {
+            console.popup("Selected component has no pins!", 16, "Error", 0);
+            console.error("Selected component has no pins!");
+            return -1;
         }
-    }
-    if (compPins.length === 0) {
-        console.popup("Selected component has no pins!", 16, "Error", 0);
-        console.error("Selected component has no pins!");
-        return -1;
-    }
 
-    var pinsToProcess = [];
+        var pinsToProcess = [];
 
-    for (var i = 0; i < pinList.length; i++) {
-        // console.message(pinList[i].pinNumber + " - " + pinList[i].netName);
-    }
-    for (var i = 0; i < compPins.length; i++) {
-        var pin = compPins[i];
-        var pinObj = pin.Pin;
-        var attr = pinObj.FindAttribute("Pin Number");
-        if (!attr) {
-            console.error("Pin has no number!");
-            continue;
-        }
-        var pinNumber = StringLib.trim(attr.Value);
-        var match = LinqLib.Enumerable(pinList).where(function (item) {
-            return parseInt(item.pinNumber, 10) == parseInt(pinNumber, 10);
-        }).toArray()[0];
-        if (match) {
-            pinsToProcess.push({
-                pin: pin,
-                desiredNetName: match.netName
-            });
-        }
-        else {
-        }
-    }
-
-    if (pinsToProcess.length === 0) {
-        console.popup("Selected component has no pins from file!", 16, "Error", 0);
-        console.error("Selected component has no pins from file!");
-        return;
-    }
-
-    block.DeSelectAll();
-    var oHelper = Scripting.CreateObject("JScriptHelper.ScriptHelper");
-    var localNull = oHelper.Nothing;
-    // var desName = Application.Documents.Item(1).Name;
-    var root = MG_Utils.getSchematicRoot();
-
-    for (var i = 0; i < pinsToProcess.length; i++) {
-
-        var pinData = pinsToProcess[i];
-        var pin = pinData.pin;
-        var desiredNetName = pinData.desiredNetName;
-        var pinNumber = pin.Pin.FindAttribute("Pin Number").Value;
-
-        // var path = pin.Parent.GetName(FULL_PATH_NAME);
-        // if (root == path) {
-        //     var parts = path.split('\\');
-        //     path = parts.slice(1, parts.length - 1).join('\\')
+        // for (var i = 0; i < pinList.length; i++) {
+            // console.message(pinList[i].pinNumber + " - " + pinList[i].netName);
         // }
-        // var sheet = pin.Parent.SheetNum;
-        // var selected = Application.SelectPathCompPin(root, path, sheet, pinNumber, 1);
-        // if (selected) {
-        //     Application.ActiveView.ZoomSelect();
-        // }
-
-        var connection = pin.Connection;
-        var net = null;
-        var segment = null;
-        if (connection) {
-            net = connection.Net;
-            segment = connection.Segment;
-            if (net.LogicalNetName === desiredNetName) {
+        for (var i = 0; i < compPins.length; i++) {
+            var pin = compPins[i];
+            var pinObj = pin.Pin;
+            var attr = pinObj.FindAttribute("Pin Number");
+            if (!attr) {
+                console.error("Pin has no number!");
                 continue;
             }
+            var pinNumber = StringLib.trim(attr.Value);
+            var match = LinqLib.Enumerable(pinList).where(function (item) {
+                return parseInt(item.pinNumber, 10) == parseInt(pinNumber, 10);
+            }).toArray()[0];
+            if (match) {
+                pinsToProcess.push({
+                    pin: pin,
+                    desiredNetName: match.netName
+                });
+            }
+            else {
+            }
         }
-        var point = pin.GetLocation();
-        var x = point.X;
-        var y = point.Y;
-        var xEnd = x;
-        if (pin.Side === VDLEFT) {
-            xEnd -= 20;
-        } else {
-            xEnd += 20;
-        }
-        net = block.AddNet(x, y, xEnd, y, pin, localNull, VD_WIRE);
 
-        connection = pin.Connection;
-        if (!connection) {
-            console.popup("Error while creating net for " + pinNumber + " pin", 16, "Error", 0);
-            console.error("Error while creating net for " + pinNumber + " pin");
+        if (pinsToProcess.length === 0) {
+            // console.popup("Selected component has no pins from file!", 16, "Error", 0);
+            // console.error("Selected component has no pins from file!");
+            console.warning("Component " + compUID + " has no pins from file!");
             continue;
         }
 
-        net = connection.Net;
-        segment = connection.Segment;
+        block.DeSelectAll();
+        var oHelper = Scripting.CreateObject("JScriptHelper.ScriptHelper");
+        var localNull = oHelper.Nothing;
+        // var desName = Application.Documents.Item(1).Name;
+        var root = MG_Utils.getSchematicRoot();
 
-        var label = net.GetLabel(segment);
-        var labelX = (pin.Side === VDLEFT) ? x - 10 : x + 10;
+        for (var i = 0; i < pinsToProcess.length; i++) {
 
-        if (!label) {
-            label = net.AddLabel(segment, desiredNetName, labelX, y);
-            label.Orientation = VDORIENT_IDENTITY;
-            label.Origin = (pin.Side === VDLEFT) ? VDALIGN_LR : VDALIGN_LL;
-            label.Visible = VDLABELVISIBLE;
-        } else {
-            label.TextString = desiredNetName;
-            label.Visible = VDLABELVISIBLE;
+            var pinData = pinsToProcess[i];
+            var pin = pinData.pin;
+            var desiredNetName = pinData.desiredNetName;
+            var pinNumber = pin.Pin.FindAttribute("Pin Number").Value;
+
+            // var path = pin.Parent.GetName(FULL_PATH_NAME);
+            // if (root == path) {
+            //     var parts = path.split('\\');
+            //     path = parts.slice(1, parts.length - 1).join('\\')
+            // }
+            // var sheet = pin.Parent.SheetNum;
+            // var selected = Application.SelectPathCompPin(root, path, sheet, pinNumber, 1);
+            // if (selected) {
+            //     Application.ActiveView.ZoomSelect();
+            // }
+
+            var connection = pin.Connection;
+            var net = null;
+            var segment = null;
+            if (connection) {
+                net = connection.Net;
+                segment = connection.Segment;
+                if (net.LogicalNetName === desiredNetName) {
+                    continue;
+                }
+            }
+            var point = pin.GetLocation();
+            var x = point.X;
+            var y = point.Y;
+            var xEnd = x;
+            if (pin.Side === VDLEFT) {
+                xEnd -= 20;
+            } else {
+                xEnd += 20;
+            }
+            net = block.AddNet(x, y, xEnd, y, pin, localNull, VD_WIRE);
+
+            connection = pin.Connection;
+            if (!connection) {
+                console.popup("Error while creating net for " + pinNumber + " pin of " + compUID, 16, "Error", 0);
+                console.error("Error while creating net for " + pinNumber + " pin of " + compUID);
+                continue;
+            }
+
+            net = connection.Net;
+            segment = connection.Segment;
+
+            var label = net.GetLabel(segment);
+            var labelX = (pin.Side === VDLEFT) ? x - 10 : x + 10;
+
+            if (!label) {
+                label = net.AddLabel(segment, desiredNetName, labelX, y);
+                label.Orientation = VDORIENT_IDENTITY;
+                label.Origin = (pin.Side === VDLEFT) ? VDALIGN_LR : VDALIGN_LL;
+                label.Visible = VDLABELVISIBLE;
+            } else {
+                label.TextString = desiredNetName;
+                label.Visible = VDLABELVISIBLE;
+            }
+
+            label.Selected = false;
+            net.Selected = false;
         }
-
-        label.Selected = false;
-        net.Selected = false;
     }
 
     block.DeSelectAll();
