@@ -48,7 +48,7 @@ function RunFaParse() {
         var output = OutputLib.createConsole(new OutputLib.MentorLayoutDriver("FA Report"));
 
         for (var i = 0; i < errorMessages.length; i++) {
-            output.eror(StringLib.trim(errorMessages[i].message.split(". ")[0]));
+            output.error(StringLib.trim(errorMessages[i].message.split(". ")[0]));
         }
 
         for (var i = 0; i < warningMessages.length; i++) {
